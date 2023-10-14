@@ -9,7 +9,7 @@ const userRouter = express.Router()
 userRouter.post("/registration", userController.registrationUser)
 userRouter.post("/activate-user", userController.activateUser)
 userRouter.post("/login", userController.loginUser)
-userRouter.get("/logout", isAuthenticated, userController.logout)
+userRouter.get("/logout", isAuthenticated, authorizeRoles("user"), userController.logout)
 
 
 export default userRouter
