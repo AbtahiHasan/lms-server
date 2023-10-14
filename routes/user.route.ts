@@ -12,6 +12,7 @@ userRouter.post("/login", userController.loginUser)
 userRouter.get("/logout", isAuthenticated, userController.logout)
 userRouter.get("/me", isAuthenticated, userController.getUserInfo)
 userRouter.get("/refresh", userController.updateAccessToken)
+userRouter.get("/social-auth", userController.socialAuth)
 
 
 export default userRouter

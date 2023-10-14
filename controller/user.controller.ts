@@ -67,7 +67,6 @@ interface IActivationRequest {
     activationCode: string;
 }
 
-
 const activateUser = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { activationToken, activationCode } = req.body as IActivationRequest
@@ -99,7 +98,6 @@ const activateUser = catchAsyncError(async (req: Request, res: Response, next: N
     }
 })
 
-
 interface ILoginRequest {
     email: string;
     password: string;
@@ -126,9 +124,6 @@ const loginUser = catchAsyncError(async (req: Request, res: Response, next: Next
         }
 
         sendToken(user, 200, res)
-
-
-        res.send(user)
     } catch (error: any) {
         console.log(error.message)
     }
@@ -147,9 +142,6 @@ const logout = catchAsyncError(async (req: Request, res: Response, next: NextFun
         return next(new ErrorHandler(error.message, 400))
     }
 })
-
-
-
 
 const getUserInfo = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -191,7 +183,31 @@ const updateAccessToken = catchAsyncError(async (req: Request, res: Response, ne
             new_access_token
         })
 
-    } catch (error) {
+    }
+    catch (error: any) {
+        return next(new ErrorHandler(error.message, 400))
+
+    }
+})
+
+interface ISocailReqBody {
+    name: string;
+    email: string;
+    avater: string
+}
+
+const socialAuth = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { name, email, avater } = req.body as ISocailReqBody
+        const user = await userModel.findOne({ email })
+        if (!user) {
+            const newUser = await userModel.create({ name, email, avater })
+            sendToken(newUser, 200, res)
+        } else {
+            sendToken(user, 200, res)
+        }
+    } catch (error: any) {
+        return next(new ErrorHandler(error.message, 400))
 
     }
 })
@@ -202,7 +218,8 @@ const userController = {
     loginUser,
     logout,
     getUserInfo,
-    updateAccessToken
+    updateAccessToken,
+    socialAuth
 }
 
 export default userController
