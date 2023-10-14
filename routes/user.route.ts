@@ -9,10 +9,10 @@ const userRouter = express.Router()
 userRouter.post("/registration", userController.registrationUser)
 userRouter.post("/activate-user", userController.activateUser)
 userRouter.post("/login", userController.loginUser)
+userRouter.post("/social-auth", userController.socialAuth)
 userRouter.get("/logout", isAuthenticated, userController.logout)
 userRouter.get("/me", isAuthenticated, userController.getUserInfo)
 userRouter.get("/refresh", userController.updateAccessToken)
-userRouter.get("/social-auth", userController.socialAuth)
 
 
 export default userRouter
