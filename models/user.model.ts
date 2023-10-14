@@ -2,6 +2,7 @@ require("dotenv").config()
 import mongoose, { Document, Model, Schema } from 'mongoose';
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
+import { accessTokenOption, refreshTokenOption } from '../utils/jwt';
 const emailRegexPattern: RegExp = /^\S+@\S+\.\S+$/
 
 export interface IUser extends Document {
@@ -76,10 +77,14 @@ userSchema.methods.comparePassword = async function (enterdPassword: string): Pr
 }
 
 userSchema.methods.SignAccessToken = function () {
-    return jwt.sign({ id: this._id }, process.env.ACCESS_TOKEN_SECRET || "")
+    return jwt.sign({ id: this._id }, process.env.ACCESS_TOKEN_SECRET || "", {
+        expiresIn: "5m"
+    })
 }
 userSchema.methods.SignRefreshToken = function () {
-    return jwt.sign({ id: this._id }, process.env.REFRESH_TOKEN_SECRET || "")
+    return jwt.sign({ id: this._id }, process.env.REFRESH_TOKEN_SECRET || "", {
+        expiresIn: "3d"
+    })
 }
 
 const userModel: Model<IUser> = mongoose.model("user", userSchema)

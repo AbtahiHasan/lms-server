@@ -3,12 +3,12 @@ import ejs from "ejs"
 import sendMail from "../utils/sendMail"
 import path from "path"
 import { Request, Response, NextFunction } from "express"
-import jwt from "jsonwebtoken"
+import jwt, { JwtPayload } from "jsonwebtoken"
 import ErrorHandler from "../utils/ErrorHandler"
 import catchAsyncError from "../middleware/catchAsyncError"
 import userModel, { IUser } from "../models/user.model"
 import createActivationToken from "../utils/createActivationToken"
-import sendToken from "../utils/jwt"
+import sendToken, { accessTokenOption, refreshTokenOption } from "../utils/jwt"
 import redis from "../utils/redis"
 import { getUserById } from "../services/user.service"
 
@@ -161,12 +161,48 @@ const getUserInfo = catchAsyncError(async (req: Request, res: Response, next: Ne
     }
 })
 
+const updateAccessToken = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const refresh_token = req.cookies?.refresh_token as string
+        const decoded = jwt.verify(refresh_token, process.env.REFRESH_TOKEN_SECRET as string) as JwtPayload
+        const message = "could not get refresh token"
+        if (!decoded) {
+            return next(new ErrorHandler(message, 400))
+        }
+
+        const session = await redis.get(decoded?.id as string)
+        if (!session) {
+            return next(new ErrorHandler(message, 400))
+        }
+
+        const user = JSON.parse(session)
+        const new_access_token = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET as string, {
+            expiresIn: "5m"
+        })
+        const new_refresh_token = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN_SECRET as string, {
+            expiresIn: "3d"
+        })
+
+
+        res.cookie("access_token", new_access_token, accessTokenOption)
+        res.cookie("refresh_token", new_refresh_token, refreshTokenOption)
+        res.status(200).json({
+            success: true,
+            new_access_token
+        })
+
+    } catch (error) {
+
+    }
+})
+
 const userController = {
     registrationUser,
     activateUser,
     loginUser,
     logout,
-    getUserInfo
+    getUserInfo,
+    updateAccessToken
 }
 
 export default userController

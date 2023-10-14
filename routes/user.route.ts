@@ -11,6 +11,7 @@ userRouter.post("/activate-user", userController.activateUser)
 userRouter.post("/login", userController.loginUser)
 userRouter.get("/logout", isAuthenticated, userController.logout)
 userRouter.get("/me", isAuthenticated, userController.getUserInfo)
+userRouter.get("/refresh", userController.updateAccessToken)
 
 
 export default userRouter
