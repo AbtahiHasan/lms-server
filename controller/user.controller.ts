@@ -9,6 +9,7 @@ import catchAsyncError from "../middleware/catchAsyncError"
 import userModel, { IUser } from "../models/user.model"
 import createActivationToken from "../utils/createActivationToken"
 import sendToken from "../utils/jwt"
+import redis from "../utils/redis"
 
 interface IRegistrationUser {
     name: string;
@@ -136,6 +137,7 @@ const logout = catchAsyncError(async (req: Request, res: Response, next: NextFun
     try {
         res.cookie("access_token", "", { maxAge: 1 })
         res.cookie("refresh_token", "", { maxAge: 1 })
+        redis.del(req.user?._id)
         res.status(200).json({
             success: true,
             message: "logout successfully"
