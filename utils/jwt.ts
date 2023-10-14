@@ -27,6 +27,7 @@ const sendToken = (user: IUser, statusCode: number, res: Response) => {
         semeSite: "lex",
         secure: process.env.NODE_ENV === "production",
     }
+
     const refreshTokenOption: ITokenOption = {
         exprire: new Date(Date.now() + refreshTokenExpire + 1000),
         maxAge: refreshTokenExpire * 1000,
