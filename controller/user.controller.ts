@@ -10,6 +10,7 @@ import userModel, { IUser } from "../models/user.model"
 import createActivationToken from "../utils/createActivationToken"
 import sendToken from "../utils/jwt"
 import redis from "../utils/redis"
+import { getUserById } from "../services/user.service"
 
 interface IRegistrationUser {
     name: string;
@@ -147,11 +148,25 @@ const logout = catchAsyncError(async (req: Request, res: Response, next: NextFun
     }
 })
 
+
+
+
+const getUserInfo = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const id = req.user?._id
+        getUserById(id, res)
+    } catch (error: any) {
+        return next(new ErrorHandler(error.message, 400))
+
+    }
+})
+
 const userController = {
     registrationUser,
     activateUser,
     loginUser,
-    logout
+    logout,
+    getUserInfo
 }
 
 export default userController
