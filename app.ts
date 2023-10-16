@@ -5,6 +5,7 @@ import error from "./middleware/error"
 export const app: Application = express()
 import cors from "cors"
 import userRouter from "./routes/user.route"
+import courseRouter from "./routes/course.route"
 
 app.use(express.json({ limit: "50mb" }))
 app.use(cookieParser())
@@ -16,6 +17,7 @@ app.use(cors({
 // routes 
 
 app.use("/api/v1/", userRouter)
+app.use("/api/v1/", courseRouter)
 
 app.get("/test", (req: Request, res: Response) => {
     res.json({
