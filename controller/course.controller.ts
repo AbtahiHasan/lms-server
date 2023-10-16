@@ -5,6 +5,7 @@ import { createCourse } from "../services/course.service"
 import courseModel from "../models/course.model"
 import { v2 as cloudinary } from "cloudinary"
 import redis from "../utils/redis"
+import mongoose from "mongoose"
 
 
 const uploadCourse = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
@@ -133,14 +134,53 @@ const getCourseByUser = catchAsyncError(async (req: Request, res: Response, next
     }
 })
 
+interface IQuestionReq {
+    contentId: string;
+    courseId: string;
+    question: string;
+}
 
+const addQuestion = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { contentId, courseId, question } = req.body as IQuestionReq
+        const course = await courseModel.findById(courseId)
+
+        if (!mongoose.Types.ObjectId.isValid(contentId)) {
+            return next(new ErrorHandler("invalid content id", 400))
+        }
+
+        const courseContent = course?.course_data?.find((item: any) => item._id.toString() === contentId)
+        console.log(153, course?.course_data)
+        if (!courseContent) {
+            return next(new ErrorHandler("invalid content id", 400))
+        }
+
+        const newQuestion: any = {
+            user: req.user,
+            question,
+            questionReplies: []
+        }
+        courseContent?.questions?.push(newQuestion)
+
+        await course?.save()
+
+        res.status(200).json({
+            success: true,
+            course
+        })
+
+    } catch (error: any) {
+        return next(new ErrorHandler(error.message, 400))
+    }
+})
 
 const courseController = {
     uploadCourse,
     editCourse,
     getSingleCourse,
     getCourses,
-    getCourseByUser
+    getCourseByUser,
+    addQuestion
 }
 
 export default courseController
