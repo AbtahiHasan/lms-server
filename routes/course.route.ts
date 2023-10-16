@@ -7,5 +7,6 @@ const courseRouter = express.Router()
 courseRouter.post("/create-course", isAuthenticated, authorizeRoles("admin"), courseController.uploadCourse)
 courseRouter.put("/edit-course/:id", isAuthenticated, authorizeRoles("admin"), courseController.editCourse)
 courseRouter.get("/get-single-course/:id", courseController.getSingleCourse)
+courseRouter.get("/get-courses", courseController.getCourses)
 
 export default courseRouter

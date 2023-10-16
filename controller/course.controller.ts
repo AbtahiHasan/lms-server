@@ -81,6 +81,34 @@ const getSingleCourse = catchAsyncError(async (req: Request, res: Response, next
         return next(new ErrorHandler(error.message, 400))
     }
 })
+const getCourses = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+        const isCacheExits = await redis.get("all-courses")
+        if (isCacheExits) {
+            const course = JSON.parse(isCacheExits)
+            console.log("hitting redis")
+            res.status(200).json({
+                success: true,
+                course
+            })
+        }
+        else {
+            const course = await courseModel.find().select("-course_data.video_url -course_data.video_section -course_data.links -course_data.suggestion -course_data.questions")
+            console.log("hitting mongodb")
+            await redis.set("all-courses", JSON.stringify(course))
+            res.status(200).json({
+                success: true,
+                course
+            })
+        }
+
+    } catch (error: any) {
+        return next(new ErrorHandler(error.message, 400))
+    }
+})
+
+
 
 const courseController = {
     uploadCourse,
