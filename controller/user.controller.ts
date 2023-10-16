@@ -248,6 +248,44 @@ const updateUserInfo = catchAsyncError(async (req: Request, res: Response, next:
     }
 })
 
+interface IChangePassword {
+    old_password: string;
+    new_password: string;
+}
+
+const changePassword = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { old_password, new_password } = req.body as IChangePassword
+        const userId = req.user?._id
+        if (!old_password || !new_password) {
+            return next(new ErrorHandler("please enter old and new password", 400))
+        }
+
+        const user = await userModel.findById(userId).select("+password")
+        if (!user) {
+            return next(new ErrorHandler("invalid user", 400))
+        }
+        const isPasswordMatch = await user?.comparePassword(old_password)
+
+        if (!isPasswordMatch) {
+            return next(new ErrorHandler("Invalid password", 400))
+        }
+
+        user.password = new_password
+
+        await redis.set(userId, JSON.stringify(user))
+
+        await user.save()
+        res.status(201).json({
+            success: true,
+            user
+        })
+
+    } catch (error: any) {
+        return next(new ErrorHandler(error.message, 400))
+    }
+})
+
 const userController = {
     registrationUser,
     activateUser,
@@ -256,7 +294,8 @@ const userController = {
     getUserInfo,
     updateAccessToken,
     socialAuth,
-    updateUserInfo
+    updateUserInfo,
+    changePassword
 }
 
 export default userController
