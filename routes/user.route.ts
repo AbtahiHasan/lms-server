@@ -15,6 +15,7 @@ userRouter.get("/me", isAuthenticated, userController.getUserInfo)
 userRouter.get("/refresh", userController.updateAccessToken)
 userRouter.put("/update-user-info", isAuthenticated, userController.updateUserInfo)
 userRouter.put("/update-user-password", isAuthenticated, userController.changePassword)
+userRouter.put("/update-user-avater", isAuthenticated, userController.changeAvater)
 
 
 export default userRouter

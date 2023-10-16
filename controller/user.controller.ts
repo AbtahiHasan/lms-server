@@ -1,9 +1,10 @@
 require("dotenv").config()
 import ejs from "ejs"
-import sendMail from "../utils/sendMail"
 import path from "path"
 import { Request, Response, NextFunction } from "express"
+import { v2 as cloudinary } from "cloudinary"
 import jwt, { JwtPayload } from "jsonwebtoken"
+import sendMail from "../utils/sendMail"
 import ErrorHandler from "../utils/ErrorHandler"
 import catchAsyncError from "../middleware/catchAsyncError"
 import userModel, { IUser } from "../models/user.model"
@@ -286,6 +287,56 @@ const changePassword = catchAsyncError(async (req: Request, res: Response, next:
     }
 })
 
+interface IChangeAvater {
+    avater: string;
+}
+
+const changeAvater = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { avater } = req.body as IChangeAvater
+
+        const userId = req.user?._id
+        const user = await userModel.findById(userId)
+
+        if (!avater || !user) {
+            return next(new ErrorHandler("invalid user and avater", 400))
+        }
+
+        if (user?.avater?.public_id) {
+            await cloudinary.uploader.destroy(user?.avater?.public_id)
+            const myClould = await cloudinary.uploader.upload(avater, {
+                folder: "avaters",
+                width: 150
+            })
+
+            user.avater = {
+                public_id: myClould.public_id,
+                url: myClould.secure_url
+            }
+
+        } else {
+            const myClould = await cloudinary.uploader.upload(avater, {
+                folder: "avaters",
+                width: 150
+            })
+
+            user.avater = {
+                public_id: myClould.public_id,
+                url: myClould.secure_url
+            }
+        }
+        await redis.set(userId, JSON.stringify(user))
+        await user.save()
+        res.status(201).json({
+            success: true,
+            user
+        })
+    } catch (error: any) {
+        return next(new ErrorHandler(error.message, 400))
+    }
+})
+
+
 const userController = {
     registrationUser,
     activateUser,
@@ -295,7 +346,8 @@ const userController = {
     updateAccessToken,
     socialAuth,
     updateUserInfo,
-    changePassword
+    changePassword,
+    changeAvater
 }
 
 export default userController
