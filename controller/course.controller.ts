@@ -107,6 +107,31 @@ const getCourses = catchAsyncError(async (req: Request, res: Response, next: Nex
         return next(new ErrorHandler(error.message, 400))
     }
 })
+const getCourseByUser = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const courseId = req.params?.id
+        const userCouseList = req.user?.courses
+
+        const isCourseExits = userCouseList?.find(course => course.course_id === courseId)
+        if (isCourseExits) {
+            const course = await courseModel.findById(courseId).select("-course_data.video_url -course_data.video_section -course_data.links -course_data.suggestion -course_data.questions")
+            return res.status(200).json({
+                success: true,
+                course
+            })
+        }
+
+        res.status(400).json({
+            success: false,
+            message: "your are not eligible for this course"
+        })
+
+
+
+    } catch (error: any) {
+        return next(new ErrorHandler(error.message, 400))
+    }
+})
 
 
 
@@ -114,7 +139,8 @@ const courseController = {
     uploadCourse,
     editCourse,
     getSingleCourse,
-    getCourses
+    getCourses,
+    getCourseByUser
 }
 
 export default courseController

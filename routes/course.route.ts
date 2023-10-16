@@ -8,5 +8,6 @@ courseRouter.post("/create-course", isAuthenticated, authorizeRoles("admin"), co
 courseRouter.put("/edit-course/:id", isAuthenticated, authorizeRoles("admin"), courseController.editCourse)
 courseRouter.get("/get-single-course/:id", courseController.getSingleCourse)
 courseRouter.get("/get-courses", courseController.getCourses)
+courseRouter.get("/get-course-content/:id", isAuthenticated, courseController.getCourseByUser)
 
 export default courseRouter
