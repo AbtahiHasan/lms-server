@@ -13,6 +13,7 @@ userRouter.post("/social-auth", userController.socialAuth)
 userRouter.get("/logout", isAuthenticated, userController.logout)
 userRouter.get("/me", isAuthenticated, userController.getUserInfo)
 userRouter.get("/refresh", userController.updateAccessToken)
+userRouter.put("/update-user-info", isAuthenticated, userController.updateUserInfo)
 
 
 export default userRouter

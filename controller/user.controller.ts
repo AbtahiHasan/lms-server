@@ -175,6 +175,7 @@ const updateAccessToken = catchAsyncError(async (req: Request, res: Response, ne
             expiresIn: "3d"
         })
 
+        req.user = user
 
         res.cookie("access_token", new_access_token, accessTokenOption)
         res.cookie("refresh_token", new_refresh_token, refreshTokenOption)
@@ -212,6 +213,41 @@ const socialAuth = catchAsyncError(async (req: Request, res: Response, next: Nex
     }
 })
 
+interface IUpdateUserInfo {
+    name: string;
+    email: string;
+}
+
+const updateUserInfo = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { name, email } = req.body as IUpdateUserInfo
+        const userId = req.user?._id
+        const user = await userModel.findById(userId)
+        if (email && user) {
+            const isEmailExits = await userModel.findOne({ email })
+            if (isEmailExits) {
+                return next(new ErrorHandler("This email already exits", 400))
+            }
+            user.email = email
+        }
+        if (name && user) {
+            user.name = name
+        }
+
+        await redis.set(userId, JSON.stringify(user))
+        await user?.save()
+
+
+        res.status(201).json({
+            success: true,
+            user
+        })
+    } catch (error: any) {
+        return next(new ErrorHandler(error.message, 400))
+
+    }
+})
+
 const userController = {
     registrationUser,
     activateUser,
@@ -219,7 +255,8 @@ const userController = {
     logout,
     getUserInfo,
     updateAccessToken,
-    socialAuth
+    socialAuth,
+    updateUserInfo
 }
 
 export default userController
