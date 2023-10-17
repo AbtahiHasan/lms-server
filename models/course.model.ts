@@ -7,11 +7,11 @@ interface IQuestion extends Document {
     questionReplies: IQuestion[]
 }
 
-interface IRevew extends Document {
+interface IReview extends Document {
     user: IUser;
     rating: number;
     comment: string;
-    commentReplies: IQuestion[]
+    commentReplies?: IReview[]
 }
 
 interface ILink extends Document {
@@ -43,19 +43,24 @@ interface ICourse extends Document {
     demo_url: string;
     benefits: { title: string }[];
     prerequisites: { title: string }[];
-    reviews: IRevew[];
+    reviews: IReview[];
     course_data: ICourseData[];
     ratings?: number;
     purchased?: number;
 }
 
-const reviewsSchema = new Schema<IRevew>({
+const reviewsSchema = new Schema<IReview>({
     user: Object,
     rating: {
         type: Number,
         default: 0
     },
-    comment: String
+    comment: String,
+    commentReplies: {
+        type: Array,
+        default: []
+    }
+
 })
 
 const linkSchema = new Schema<ILink>({

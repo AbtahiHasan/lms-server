@@ -295,6 +295,51 @@ const addReview = catchAsyncError(async (req: Request, res: Response, next: Next
     }
 })
 
+interface IReviewReply {
+    courseId: string;
+    reviewId: string;
+    comment: string;
+}
+
+const addReviewReply = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { reviewId, courseId, comment } = req.body as IReviewReply
+
+        const course = await courseModel.findById(courseId)
+
+        if (!course) {
+            return next(new ErrorHandler("invalid course id", 400))
+        }
+
+        const review = course.reviews?.find(item => item._id.toString() === reviewId)
+
+        if (!review) {
+            return next(new ErrorHandler("invalied review id", 400))
+        }
+        const reviewReply: any = {
+            user: req.user,
+            comment,
+        }
+
+        if (!review.commentReplies) {
+            review.commentReplies = []
+        }
+        console.log(review)
+
+        review.commentReplies.push(reviewReply)
+
+        await course.save()
+
+        res.status(200).json({
+            success: true,
+            course
+        })
+    } catch (error: any) {
+        return next(new ErrorHandler(error.message, 400))
+    }
+})
+
+
 const courseController = {
     uploadCourse,
     editCourse,
@@ -303,7 +348,8 @@ const courseController = {
     getCourseByUser,
     addQuestion,
     addQuestionReply,
-    addReview
+    addReview,
+    addReviewReply
 }
 
 export default courseController

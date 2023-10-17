@@ -12,6 +12,7 @@ courseRouter.get("/get-course-content/:id", isAuthenticated, courseController.ge
 courseRouter.put("/add-question", isAuthenticated, courseController.addQuestion)
 courseRouter.put("/add-question-reply", isAuthenticated, courseController.addQuestionReply)
 courseRouter.put("/add-review", isAuthenticated, courseController.addReview)
+courseRouter.put("/add-review-reply", isAuthenticated, authorizeRoles("admin"), courseController.addReviewReply)
 
 
 export default courseRouter
