@@ -8,7 +8,7 @@ interface IQuestion extends Document {
 }
 
 interface IRevew extends Document {
-    user: string;
+    user: IUser;
     rating: number;
     comment: string;
     commentReplies: IQuestion[]

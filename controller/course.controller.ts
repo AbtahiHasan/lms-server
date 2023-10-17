@@ -245,6 +245,56 @@ const addQuestionReply = catchAsyncError(async (req: Request, res: Response, nex
     }
 })
 
+interface IReviewReq {
+    courseId: string;
+    rating: number;
+    comment: string;
+}
+
+const addReview = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { courseId, rating, comment } = req.body as IReviewReq
+        const userCouseList = req.user?.courses
+        const course = await courseModel.findById(courseId)
+
+        if (!course) {
+            return next(new ErrorHandler("invalid course id", 400))
+        }
+
+        const userIsValid = userCouseList?.find(item => item.course_id.toString() === course._id.toString())
+
+
+        if (!userIsValid) {
+            return next(new ErrorHandler("your are not eligible for this course", 400))
+        }
+        const review: any = {
+            user: req.user,
+            rating,
+            comment
+        }
+        course?.reviews.push(review)
+        let avg = 0;
+        course?.reviews.forEach(rev => {
+            avg += rev.rating
+        })
+
+        const ratings = avg / course?.reviews.length
+        if (Number.isInteger(ratings)) {
+            course.ratings = ratings
+        } else {
+            course.ratings = parseFloat(ratings.toFixed(1))
+        }
+        await course.save()
+
+        res.status(200).json({
+            success: true,
+            course
+        })
+    } catch (error: any) {
+        return next(new ErrorHandler(error.message, 400))
+    }
+})
+
 const courseController = {
     uploadCourse,
     editCourse,
@@ -252,7 +302,8 @@ const courseController = {
     getCourses,
     getCourseByUser,
     addQuestion,
-    addQuestionReply
+    addQuestionReply,
+    addReview
 }
 
 export default courseController
