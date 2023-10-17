@@ -10,6 +10,7 @@ courseRouter.get("/get-single-course/:id", courseController.getSingleCourse)
 courseRouter.get("/get-courses", courseController.getCourses)
 courseRouter.get("/get-course-content/:id", isAuthenticated, courseController.getCourseByUser)
 courseRouter.post("/add-question", isAuthenticated, courseController.addQuestion)
+courseRouter.post("/add-question-reply", isAuthenticated, courseController.addQuestionReply)
 
 
 export default courseRouter

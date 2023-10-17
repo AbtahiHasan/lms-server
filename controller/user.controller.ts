@@ -77,7 +77,7 @@ const activateUser = catchAsyncError(async (req: Request, res: Response, next: N
         }
 
         const userExits = await userModel.findOne({ email: user.email })
-        console.log(user)
+
         if (userExits) {
             return next(new ErrorHandler("user alredy exits", 400))
         }
@@ -95,7 +95,7 @@ const activateUser = catchAsyncError(async (req: Request, res: Response, next: N
             success: true,
         })
     } catch (error: any) {
-        console.log(error.message)
+        return next(new ErrorHandler(error.message, 400))
     }
 })
 
@@ -126,7 +126,7 @@ const loginUser = catchAsyncError(async (req: Request, res: Response, next: Next
 
         sendToken(user, 200, res)
     } catch (error: any) {
-        console.log(error.message)
+        return next(new ErrorHandler(error.message, 400))
     }
 })
 

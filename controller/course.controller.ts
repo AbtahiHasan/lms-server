@@ -62,7 +62,6 @@ const getSingleCourse = catchAsyncError(async (req: Request, res: Response, next
         const isCacheExits = await redis.get(courseId)
         if (isCacheExits) {
             const course = JSON.parse(isCacheExits)
-            console.log("hitting redis")
             res.status(200).json({
                 success: true,
                 course
@@ -70,7 +69,6 @@ const getSingleCourse = catchAsyncError(async (req: Request, res: Response, next
         }
         else {
             const course = await courseModel.findById(courseId).select("-course_data.video_url -course_data.video_section -course_data.links -course_data.suggestion -course_data.questions")
-            console.log("hitting mongodb")
             await redis.set(courseId, JSON.stringify(course))
             res.status(200).json({
                 success: true,
@@ -88,7 +86,7 @@ const getCourses = catchAsyncError(async (req: Request, res: Response, next: Nex
         const isCacheExits = await redis.get("all-courses")
         if (isCacheExits) {
             const course = JSON.parse(isCacheExits)
-            console.log("hitting redis")
+
             res.status(200).json({
                 success: true,
                 course
@@ -96,7 +94,7 @@ const getCourses = catchAsyncError(async (req: Request, res: Response, next: Nex
         }
         else {
             const course = await courseModel.find().select("-course_data.video_url -course_data.video_section -course_data.links -course_data.suggestion -course_data.questions")
-            console.log("hitting mongodb")
+
             await redis.set("all-courses", JSON.stringify(course))
             res.status(200).json({
                 success: true,
@@ -150,7 +148,7 @@ const addQuestion = catchAsyncError(async (req: Request, res: Response, next: Ne
         }
 
         const courseContent = course?.course_data?.find((item: any) => item._id.toString() === contentId)
-        console.log(153, course?.course_data)
+
         if (!courseContent) {
             return next(new ErrorHandler("invalid content id", 400))
         }
@@ -174,13 +172,70 @@ const addQuestion = catchAsyncError(async (req: Request, res: Response, next: Ne
     }
 })
 
+interface IQuestionResply {
+    contentId: string;
+    courseId: string;
+    questionId: string;
+    question: string;
+
+}
+
+
+const addQuestionReply = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { contentId, courseId, questionId, question: questionData } = req.body as IQuestionResply
+        const course = await courseModel.findById(courseId)
+
+        if (!mongoose.Types.ObjectId.isValid(contentId)) {
+            return next(new ErrorHandler("invalid content id", 400))
+        }
+
+        const courseContent = course?.course_data?.find((item: any) => item._id.toString() === contentId)
+
+        if (!courseContent) {
+            return next(new ErrorHandler("invalid content id", 400))
+        }
+
+        const question = courseContent.questions.find((item: any) => item._id.toString() === questionId)
+
+        if (!question) {
+            return next(new ErrorHandler("invalid question id", 400))
+        }
+
+        const questionReply: any = {
+            user: req.user,
+            questionData
+        }
+        question.questionReplies.push(questionReply)
+
+        await course?.save()
+
+        if (req.user?._id === question.user._id) {
+            //TODO create Notification 
+        } else {
+            const data = {
+                name: question.user.name,
+                title: courseContent.title,
+            }
+        }
+
+        res.status(200).json({
+            success: true,
+            course
+        })
+    } catch (error: any) {
+        return next(new ErrorHandler(error.message, 400))
+    }
+})
+
 const courseController = {
     uploadCourse,
     editCourse,
     getSingleCourse,
     getCourses,
     getCourseByUser,
-    addQuestion
+    addQuestion,
+    addQuestionReply
 }
 
 export default courseController

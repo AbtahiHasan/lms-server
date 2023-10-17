@@ -17,13 +17,17 @@ export const isAuthenticated = catchAsyncError(async (req: Request, res: Respons
         return next(new ErrorHandler("access token is not valid", 401))
     }
 
-    const user = await redis.get(decoded.id)
+    const chachedUser = await redis.get(decoded.id)
 
-    if (!user) {
+    if (!chachedUser) {
         return next(new ErrorHandler("user not found", 401))
     }
 
-    req.user = JSON.parse(user)
+    const user = JSON.parse(chachedUser)
+
+    delete user.password
+
+    req.user = user
     next()
 })
 
