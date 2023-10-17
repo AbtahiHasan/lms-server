@@ -6,6 +6,9 @@ import courseModel from "../models/course.model"
 import { v2 as cloudinary } from "cloudinary"
 import redis from "../utils/redis"
 import mongoose from "mongoose"
+import ejs from "ejs"
+import path from "path"
+import sendMail from "../utils/sendMail"
 
 
 const uploadCourse = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
@@ -210,13 +213,27 @@ const addQuestionReply = catchAsyncError(async (req: Request, res: Response, nex
 
         await course?.save()
 
-        if (req.user?._id === question.user._id) {
-            //TODO create Notification 
-        } else {
-            const data = {
+
+        try {
+            const data: any = {
                 name: question.user.name,
                 title: courseContent.title,
             }
+            if (req.user?._id === question.user._id) {
+                //TODO create Notification 
+            } else {
+                await ejs.renderFile(path.join(__dirname, "../mails/question-reply.ejs"), data)
+                await sendMail({
+                    subject: "Question reply",
+                    email: question.user.email,
+                    templete: "question-reply.ejs",
+                    data
+                })
+            }
+
+
+        } catch (error: any) {
+            return next(new ErrorHandler(error.message, 400))
         }
 
         res.status(200).json({
