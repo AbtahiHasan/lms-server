@@ -40,14 +40,11 @@ const updateNotificationStatus = catchAsyncError(async (req: Request, res: Respo
     }
 })
 
-cron.schedule("0 0 0 * * *", async () => {
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-    await notificationModel.deleteMany({ status: "read", createdAt: { $lt: thirtyDaysAgo } })
-})
+
 
 const notificationController = {
     getAllNotifications,
-    updateNotificationStatus
+    // updateNotificationStatus
 }
 
 export default notificationController
