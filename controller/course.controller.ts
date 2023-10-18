@@ -9,6 +9,7 @@ import mongoose from "mongoose"
 import ejs from "ejs"
 import path from "path"
 import sendMail from "../utils/sendMail"
+import notificationModel from "../models/notification.model"
 
 
 const uploadCourse = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
@@ -165,6 +166,13 @@ const addQuestion = catchAsyncError(async (req: Request, res: Response, next: Ne
 
         await course?.save()
 
+        const notification = {
+            user: req.user?._id,
+            title: "New Question",
+            message: `You have a new Question reply from ${courseContent?.title}`
+        }
+        await notificationModel.create(notification)
+
         res.status(200).json({
             success: true,
             course
@@ -220,7 +228,12 @@ const addQuestionReply = catchAsyncError(async (req: Request, res: Response, nex
                 title: courseContent.title,
             }
             if (req.user?._id === question.user._id) {
-                //TODO create Notification 
+                const notification = {
+                    user: req.user?._id,
+                    title: "New Question reply",
+                    message: `You have a new Question reply from ${courseContent?.title}`
+                }
+                await notificationModel.create(notification)
             } else {
                 await ejs.renderFile(path.join(__dirname, "../mails/question-reply.ejs"), data)
                 await sendMail({
