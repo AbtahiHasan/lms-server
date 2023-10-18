@@ -336,6 +336,21 @@ const changeAvater = catchAsyncError(async (req: Request, res: Response, next: N
     }
 })
 
+// only for admin 
+
+const getAllUsers = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const users = await userModel.find()
+        res.status(200).json({
+            success: true,
+            users
+        })
+    } catch (error: any) {
+        return next(new ErrorHandler(error.message, 400))
+    }
+})
+
+
 
 const userController = {
     registrationUser,
@@ -347,7 +362,8 @@ const userController = {
     socialAuth,
     updateUserInfo,
     changePassword,
-    changeAvater
+    changeAvater,
+    getAllUsers
 }
 
 export default userController

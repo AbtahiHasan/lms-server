@@ -353,6 +353,22 @@ const addReviewReply = catchAsyncError(async (req: Request, res: Response, next:
 })
 
 
+// only for admin 
+const getAllCourses = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const courses = await courseModel.find()
+
+        res.status(200).json({
+            success: true,
+            courses
+        })
+    } catch (error: any) {
+        return next(new ErrorHandler(error.message, 400))
+    }
+})
+
+
+
 const courseController = {
     uploadCourse,
     editCourse,
@@ -362,7 +378,8 @@ const courseController = {
     addQuestion,
     addQuestionReply,
     addReview,
-    addReviewReply
+    addReviewReply,
+    getAllCourses
 }
 
 export default courseController

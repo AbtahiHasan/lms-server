@@ -16,6 +16,7 @@ userRouter.get("/refresh", userController.updateAccessToken)
 userRouter.put("/update-user-info", isAuthenticated, userController.updateUserInfo)
 userRouter.put("/update-user-password", isAuthenticated, userController.changePassword)
 userRouter.put("/update-user-avater", isAuthenticated, userController.changeAvater)
+userRouter.get("/get-all-users", isAuthenticated, authorizeRoles("admin"), userController.getAllUsers)
 
 
 export default userRouter

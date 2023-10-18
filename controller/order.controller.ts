@@ -76,8 +76,26 @@ const createOrder = catchAsyncError(async (req: Request, res: Response, next: Ne
     }
 })
 
+// only for admin 
+
+const getAllOrders = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+        const orders = await orderModel.find()
+        res.status(200).json({
+            success: true,
+            orders
+        })
+
+    } catch (error: any) {
+        return next(new ErrorHandler(error.message, StatusCodes.BAD_REQUEST))
+    }
+})
+
+
 const orderController = {
-    createOrder
+    createOrder,
+    getAllOrders
 }
 
 export default orderController
