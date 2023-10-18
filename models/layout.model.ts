@@ -2,7 +2,7 @@ import mongoose, { Document, Model, Schema } from "mongoose";
 
 interface FaqItem extends Document {
     question: string;
-    answar: string;
+    answer: string;
 }
 
 interface Category extends Document {
@@ -27,7 +27,7 @@ interface Layout extends Document {
 
 const faqSchma = new Schema<FaqItem>({
     question: String,
-    answar: String
+    answer: String
 })
 
 const categorySchma = new Schema<Category>({
